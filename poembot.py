@@ -1,23 +1,12 @@
 """ First attempt to work with random poem API.
 """
 from langdetect import detect
-from secrets import *
+from helpers import *
 import requests
-import tweepy
-
-
-def get_twitter_api():
-    """ Use secrets to authenticate twitter API access. """
-    auth = tweepy.OAuthHandler(C_KEY, C_SECRET)
-    auth.set_access_token(A_TOKEN, A_TOKEN_SECRET)
-    return tweepy.API(auth)
 
 
 def main():
-    """
-
-    :return:
-    :rtype:
+    """ Access API point, find tweetable poem, and tweet it.
     """
     count = 1
     while count > 0:
@@ -29,58 +18,44 @@ def main():
         for i in range(0, len(json)):
             poem = json[i]
 
-            if detect(poem['content']) == 'en' and count > 0:
+            if count > 0 and detect(poem['content']) == 'en' and no_banned_words(poem['content']):
 
                 poem_thread = tweet_threadify(poem['content'])
-                if poem_thread is not None:
+                if poem_thread is not None and len(poem_thread) < 6:
 
                     api = get_twitter_api()
 
-                    head_text = poem['title'] + '\n' + \
-                                'Written by ' + poem['poet']['name'] + '.'
+                    head_text = poem['title'] + '\n' + 'Written by ' + poem['poet']['name'] + '.\n'
+                    if len(poem_thread) == 1:
+                        head_text = head_text + '#micropoetry #poetry #poem #poet #mpy'
+                    else:
+                        head_text = head_text + '#poetry #poem #poet'
 
                     last_tweet = api.update_status(head_text)
-                    print('Tweeted:\n'+head_text)
 
                     for j in range(0, len(poem_thread)):
                         tweet = api.update_status(poem_thread[j], last_tweet.id)
                         last_tweet = tweet
 
+                    print('Tweeted:\n' + head_text)
                     count -= 1
 
 
 def tweet_threadify(poem_text):
     """ Attempts to cleanly break up poem into sequence of tweet-sized chunks.
 
-    :param poem_text:
-    :type poem_text:
-    :return: Poem as sequence of tweet-sized chunks, or False iff:
-    poem thread contains stansas that are too large with no clear split point,
-    [poem thread would be longer than 10 tweets?].
-    :rtype: list, Boolean
+    :param poem_text: Text to be broken up into tweet-sized chunks.
+    :type poem_text: str
+    :return: Poem as sequence of tweet-sized chunks, or None iff poem thread
+        contains stansas that are too large with no clear split point.
+    :rtype: list, None
     """
     stansas = poem_text.split('\n\n')
-    to_trim = 0
     for i in range(0, len(stansas)):
-
         if len(stansas[i]) > 280:
             # TODO : How do we detect where natural breaks occur in the linguistic patterns of poems?
             # TODO : Possible split chars include ; .
             return None
-
-        if i+1 < len(stansas) and len(stansas[i]) <= 135 and len(stansas[i+1]) <= 135:
-            # Put two stansas into one tweet.
-            combined_stansa = stansas[i] + '\n\n' + stansas[i+1]
-            # Replace first tweet.
-            stansas[i] = combined_stansa
-            # Shift forward all other stansas.
-            for j in range(i+1, len(stansas)-1):
-                stansas[j] = stansas[j+1]
-            to_trim += 1
-
-    for i in range(0, to_trim):
-        stansas.pop()
-
     return stansas
 
 
