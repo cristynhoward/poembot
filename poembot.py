@@ -17,8 +17,9 @@ def main():
 
         for i in range(0, len(json)):
             poem = json[i]
+            poem_lang = detect(poem['content'])
 
-            if count > 0 and detect(poem['content']) == 'en' and no_banned_words(poem['content']):
+            if count > 0 and valid_lang(poem_lang) and no_bad_words(poem['content'], poem_lang):
 
                 poem_thread = tweet_threadify(poem['content'])
                 if poem_thread is not None and len(poem_thread) < 6:

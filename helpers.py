@@ -2,7 +2,7 @@
 """
 from os import path, getcwd
 from secrets import *
-import tweepy
+import tweepy, requests
 
 
 def get_twitter_api():
@@ -24,21 +24,36 @@ def get_path_to(filename):
     return path.join(dir, filename)
 
 
-def no_banned_words(poem_text):
-    """ Verify poem does not contain slurs.
+def valid_lang(lang):
+    """ Checks if language is one that can be processed.
 
-    :param poem_text: Text of poem to be checked for banned terms.
-    :type poem_text: str
-    :return: Whether input is free of banned terms.
+    :param lang: The code identifying the language.
+    :type lang: str
+    :return: Whether lang is a vlaid language.
     :rtype: Boolean
     """
-    banned_words_file = open(get_path_to(BANNED_WORDS_FILE), 'r')
+    valid_langs = ["ar", "cs", "da", "de",  "en", "eo", "es", "fa", "fi", "fr", "hi", "hu", "it", "ja", "ko", "nl",
+                   "no", "pl", "pt", "ru", "sv", "th", "tr", "zh"]
+    return lang in valid_langs
 
-    for rawline in banned_words_file:
-        line = rawline.rstrip()
 
-        if poem_text.find(line) != -1:
-            # Poem contains banned word.
-            return False
+def no_bad_words(text, lang):
+    """ Verify that text does not contain any slurs.
 
-    return True
+    :param text: The text to be checked for slurs.
+    :type text: str
+    :param lang: The language code of the text.
+    :type lang: str
+    :return: Whether the text is free of slurs.
+    :rtype: Boolean
+    """
+    if valid_lang(lang):
+        url = 'https://raw.githubusercontent.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/'\
+              + lang
+        r = requests.get(url)
+        slurs = r.content.decode().split('\n')
+        for slur in slurs:
+            if slur != "" and text.find(slur) != -1:
+                # Text contains slur.
+                return False
+        return True
