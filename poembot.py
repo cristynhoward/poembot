@@ -10,7 +10,7 @@ def main():
     """
     count = 1
     while count > 0:
-
+        log("Attempting to access poem API.")
         url = 'https://www.poemist.com/api/v1/randompoems'
         r = requests.get(url)
         json = r.json()
