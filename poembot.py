@@ -10,7 +10,7 @@ def main():
     """
     count = 1
     while count > 0:
-
+        log("Attempting to access poem API.")
         url = 'https://www.poemist.com/api/v1/randompoems'
         r = requests.get(url)
         json = r.json()
@@ -38,7 +38,7 @@ def main():
                         tweet = api.update_status(poem_thread[j], last_tweet.id)
                         last_tweet = tweet
 
-                    print('Tweeted:\n' + head_text)
+                    log('Tweeted:\n' + head_text)
                     count -= 1
 
 
