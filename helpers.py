@@ -35,7 +35,7 @@ def log(message):
     """
     print(message)
     day = strftime("%d_%b_%Y", gmtime())
-    with open(os.path.join(getpath(), "logs/" + day + ".log"), 'a+') as f:
+    with open(get_path_to("logs/" + day + ".log"), 'a+') as f:
         t = strftime("%d %b %Y %H:%M:%S", gmtime())
         f.write("\n" + t + " " + message)
 

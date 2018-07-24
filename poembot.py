@@ -38,7 +38,7 @@ def main():
                         tweet = api.update_status(poem_thread[j], last_tweet.id)
                         last_tweet = tweet
 
-                    print('Tweeted:\n' + head_text)
+                    log('Tweeted:\n' + head_text)
                     count -= 1
 
 
